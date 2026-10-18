@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<title>Mening hisobim</title>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;800&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#e9efec;--surf:#fff;--ink:#14211d;--mute:#5b6b65;--line:#d3ddd8;--acc:#0f766e;--on:#fff;--acc2:#e0f2ef;--bad:#c2410c;--ok:#15803d;
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media(prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0e1815;--surf:#16241f;--ink:#e8f1ed;--mute:#93a69e;--line:#27382f;--acc:#3dd4c0;--on:#06201c;--acc2:#12312c;--bad:#fb923c;--ok:#4ade80;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#0e1815;--surf:#16241f;--ink:#e8f1ed;--mute:#93a69e;--line:#27382f;--acc:#3dd4c0;--on:#06201c;--acc2:#12312c;--bad:#fb923c;--ok:#4ade80;color-scheme:dark}
+*{box-sizing:border-box}html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--bg);color:var(--ink);font:400 15px/1.5 Manrope,system-ui,sans-serif}
+main{max-width:780px;margin:0 auto;padding:16px 14px 60px}
+h1,h2{margin:0;font-weight:800}h1{font-size:26px;line-height:1.15}h2{font-size:17px;margin-bottom:10px}
+.card{background:var(--surf);border:1px solid var(--line);border-radius:14px;padding:16px;margin-bottom:14px}
+.top{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;flex-wrap:wrap}
+.mute{color:var(--mute);font-size:13px}
+.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.stat{background:var(--acc2);border-radius:10px;padding:12px}.stat b{display:block;font-size:18px;font-weight:800;overflow-wrap:anywhere}
+.neg{color:var(--bad)}.pos{color:var(--ok)}
+input,select,textarea,button{font:inherit;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:9px;padding:9px 10px;min-width:0}
+textarea{width:100%;resize:vertical}
+input:focus,select:focus,textarea:focus,button:focus-visible{outline:2px solid var(--acc);outline-offset:1px}
+button{cursor:pointer;font-weight:600}button.p{background:var(--acc);color:var(--on);border-color:transparent}
+button.g{color:var(--mute);padding:6px 10px}
+.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}.row>input,.row>select{flex:1 1 130px}
+.fg{display:grid;grid-template-columns:1fr 1fr;gap:10px}.fg label{display:flex;flex-direction:column;gap:3px;font-size:13px;color:var(--mute)}.fg .w{grid-column:1/-1}
+.bar{height:8px;background:var(--bg);border-radius:6px;overflow:hidden;margin:4px 0 12px}
+.bar i{display:block;height:100%;background:var(--acc);border-radius:6px}.bar i.over{background:var(--bad)}
+.cat{display:flex;justify-content:space-between;align-items:center;gap:8px;font-weight:600}.cat small{font-weight:400;color:var(--mute)}
+ul{list-style:none;margin:0;padding:0}
+li{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:9px 0;border-top:1px solid var(--line)}li:first-child{border-top:0}
+li .n{flex:1;overflow-wrap:anywhere}li.done .n{text-decoration:line-through;color:var(--mute)}
+.x{background:none;border:0;color:var(--mute);padding:2px 7px;font-size:17px}
+.lim{width:120px;padding:5px 8px;text-align:right}
+.st{font-size:12px;color:var(--mute)}.st.ok{color:var(--ok)}.st.er{color:var(--bad)}
+nav{display:flex;gap:6px;overflow-x:auto;position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--bg);padding:6px 0 10px;margin-bottom:6px}nav button{white-space:nowrap;border-radius:20px;padding:7px 14px;font-size:14px;background:var(--surf)}nav button.on{background:var(--acc);color:var(--on);border-color:transparent}
+@media(max-width:520px){.grid,.fg{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div id="lk" style="display:none;position:fixed;inset:0;z-index:99;background:var(--bg);align-items:center;justify-content:center;flex-direction:column;gap:10px;padding:20px"><h2>PIN kiriting</h2><input id="lp" type="password" inputmode="numeric" maxlength="12" autocomplete="off" aria-label="PIN" onkeydown="if(event.key==='Enter')tryUnlock()"><button class="p" onclick="tryUnlock()">Ochish</button><span class="st er" id="le"></span></div>
+<div id="dg" style="display:none;position:fixed;inset:0;z-index:100;background:rgba(0,0,0,.5);align-items:center;justify-content:center;padding:20px"><div class="card" style="max-width:360px;width:100%;margin:0"><p id="dm" style="margin-top:0"></p><input id="di" style="width:100%;margin-bottom:10px" aria-label="Qiymat"><div class="row" style="justify-content:flex-end"><button class="g" id="dn">Bekor</button><button class="p" id="dk">OK</button></div></div></div>
+<main>
+<section class="card">
+  <div class="top">
+    <div><span class="mute" id="age"></span><h1 id="nm">Ismingiz</h1><span class="mute" id="sub"></span></div>
+    <div style="text-align:right"><div class="row" style="justify-content:flex-end"><button class="g" onclick="theme()">Rejim</button></div><div class="st" id="sync" style="margin-top:6px"></div></div>
+  </div>
+  <div class="row" style="margin:14px 0 10px;justify-content:center">
+    <button class="g" onclick="mv(-1)" aria-label="Oldingi oy">‹</button><b id="mo" style="min-width:150px;text-align:center"></b><button class="g" onclick="mv(1)" aria-label="Keyingi oy">›</button>
+  </div>
+  <div class="grid">
+    <div class="stat"><span class="mute">Kirim</span><b id="sInc"></b></div>
+    <div class="stat"><span class="mute">Chiqim</span><b id="sSp"></b></div>
+    <div class="stat"><span class="mute">Qolgan</span><b id="sLeft"></b></div>
+  </div>
+</section>
+<div id="al"></div><p class="mute" id="ins" style="margin:-4px 0 12px"></p><nav id="tabs" aria-label="Bo‘limlar"></nav>
+
+<section class="card" id="prof">
+  <h2>Men haqimda</h2>
+  <div class="fg">
+    <label>Ism<input id="pName" maxlength="40" autocomplete="given-name"></label>
+    <label>Familiya<input id="pSur" maxlength="40" autocomplete="family-name"></label>
+    <label>Yosh<input id="pAge" type="number" inputmode="numeric" min="0" max="120"></label>
+    <label>Telefon<input id="pTel" type="tel" maxlength="20" autocomplete="tel"></label>
+    <label>Shahar<input id="pCity" maxlength="40"></label>
+    <label>Kasb / ish joyi<input id="pJob" maxlength="60"></label>
+    <label>Oila a’zolari soni<input id="pFam" type="number" inputmode="numeric" min="0" max="30"></label>
+    <label>Maqsadim<input id="pGoal" maxlength="80" placeholder="masalan: mashina uchun yig‘ish"></label>
+    <label class="w">Qo‘shimcha yozuv<textarea id="pNote" rows="3" maxlength="500"></textarea></label>
+  </div>
+  <div class="row" style="margin-top:10px"><button class="p" onclick="saveP()">Saqlash</button><span class="st" id="pSt"></span></div>
+</section>
+
+<section class="card" id="inc">
+  <h2>Kirim (pul tushishi)</h2>
+  <p class="mute" style="margin-top:-6px">Oylik, bonus kabi pul tushganda shu yerga yozing.</p>
+  <div class="row"><input id="iN" placeholder="Manba (oylik, bonus...)" maxlength="60"><input id="iA" type="number" inputmode="numeric" min="1" placeholder="Summa"><input id="iD" type="date"><button class="p" onclick="addI()">Qo‘shish</button></div>
+  <ul id="iL" style="margin-top:8px"></ul>
+</section>
+
+<section class="card" id="exp">
+  <h2>Chiqim (sarflangan pul)</h2>
+  <p class="mute" style="margin-top:-6px">Pul sarflaganingizda yozing. Toifani tanlang, limitlar shunga qarab hisoblanadi.</p>
+  <div class="row"><input id="eN" placeholder="Nima uchun?" maxlength="60"><input id="eA" type="number" inputmode="numeric" min="1" placeholder="Summa"><select id="eC" aria-label="Toifa"></select><input id="eD" type="date"><button class="p" onclick="addE()">Qo‘shish</button></div>
+  <div class="row" style="margin-top:10px"><input id="fq" placeholder="Qidirish (nomi yoki summa)" oninput="render()"><select id="fc" onchange="render()" aria-label="Toifa bo‘yicha filtr"></select></div><ul id="eL" style="margin-top:8px"></ul>
+</section>
+
+<section class="card" id="cats">
+  <h2>Toifalar va limitlar</h2>
+  <p class="mute" style="margin-top:-6px">Har toifaga oylik limit yozing: nimaga qancha sarflash kerakligi shu yerda ko‘rinadi.</p>
+  <div id="cL"></div>
+</section>
+
+<section class="card" id="buy">
+  <h2>Nima olish kerak</h2>
+  <div class="row"><input id="bN" placeholder="Nima olish kerak?" maxlength="60"><input id="bP" type="number" inputmode="numeric" min="0" placeholder="Taxminiy narx"><button class="p" onclick="addB()">Qo‘shish</button></div>
+  <ul id="bL" style="margin-top:8px"></ul><div class="mute" id="bT"></div>
+</section>
+
+<section class="card" id="chs"><h2>Oxirgi 6 oy</h2><div id="ch"></div></section>
+
+<section class="card" id="debt">
+  <h2>Qarz va kreditlar</h2>
+  <p class="mute" style="margin-top:-6px">Jami summani bir marta yozing. Keyin har to‘lovni “To‘lov” tugmasi bilan kiriting, qolgan summa o‘zi hisoblanadi.</p>
+  <div class="row"><input id="dN" placeholder="Kim bilan yoki qaysi bank?" maxlength="60"><input id="dA" type="number" inputmode="numeric" min="1" placeholder="Jami summa"><select id="dT" aria-label="Turi"><option value="men">Men qarzdorman</option><option value="menga">Menga qarz</option></select><input id="dD" type="date" aria-label="Muddat"><button class="p" onclick="addD()">Qo‘shish</button></div>
+  <ul id="dL" style="margin-top:8px"></ul><div class="mute" id="dS"></div>
+</section>
+
+<section class="card" id="goal">
+  <h2>Shaxsiy bank (jamg‘arma)</h2>
+  <p class="mute" style="margin-top:-6px">Maqsad qo‘ying va pul solib boring. Qulf yoqilsa, maqsadga yetguncha yechib bo‘lmaydi. Haqiqiy pul bankda turadi, bu yerda uning hisobini yuritasiz.</p>
+  <div class="row"><input id="gN" placeholder="Nima uchun yig‘asiz?" maxlength="60"><input id="gA" type="number" inputmode="numeric" min="1" placeholder="Kerakli summa"><input id="gB" placeholder="Pul qaysi bankda? (ixtiyoriy)" maxlength="40"><input id="gD" type="date" aria-label="Muddat (ixtiyoriy)"><label class="mute" style="display:flex;gap:6px;align-items:center;flex:1 1 100%"><input type="checkbox" id="gK" checked> Maqsadga yetguncha yechib bo‘lmasin</label><button class="p" onclick="addG()">Qo‘shish</button></div>
+  <ul id="gL" style="margin-top:8px"></ul>
+</section>
+
+<section class="card" id="rec">
+  <h2>Doimiy to‘lovlar</h2>
+  <p class="mute" style="margin-top:-6px">Har oy takrorlanadigan xarajat (ijara, internet...). Belgilangan kuni chiqimga o‘zi qo‘shiladi.</p>
+  <div class="row"><input id="rN" placeholder="Nomi" maxlength="60"><input id="rA" type="number" inputmode="numeric" min="1" placeholder="Summa"><select id="rC" aria-label="Toifa"></select><input id="rD" type="number" inputmode="numeric" min="1" max="28" placeholder="Oyning kuni"><button class="p" onclick="addR()">Qo‘shish</button></div>
+  <ul id="rL" style="margin-top:8px"></ul>
+</section>
+
+<section class="card" id="bak">
+  <h2>Zaxira nusxa</h2>
+  <p class="mute" style="margin-top:-6px">Ma’lumotlaringiz akkauntingizga ham, shu qurilmaga ham saqlanadi. Qo‘shimcha ehtiyot uchun nusxa olib qo‘yishingiz mumkin.</p>
+  <div class="row" style="margin-bottom:8px"><button onclick="setPin()">PIN o‘rnatish / o‘zgartirish</button><button onclick="setPin(1)">PIN ni o‘chirish</button></div>
+  <p class="mute" style="margin-top:-2px">PIN sahifani boshqalar ochib qo‘ymasligi uchun, kuchli shifrlash emas.</p>
+  <div class="row"><button onclick="bakGet()">Nusxa olish</button><button onclick="bakSet()">Nusxadan tiklash</button></div>
+  <textarea id="bk" rows="4" style="margin-top:8px" aria-label="Zaxira matni"></textarea>
+</section>
+</main>
+<script>
+const CATS=["Oziq-ovqat","Transport","Uy-joy","Kommunal","Kiyim","Salomatlik","O‘qish","Ko‘ngilochar","Boshqa"];
+const KEY="hisob_v2";
+const $=id=>document.getElementById(id);
+const esc=s=>String(s).replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]));
+const num=v=>{const n=Math.round(Number(String(v).replace(/[\s,]/g,"")));return Number.isFinite(n)&&n>0?Math.min(n,1e13):0};
+const f=n=>Math.round(n).toLocaleString("ru-RU").replace(/\u00a0/g," ")+" so‘m";
+const ymd=d=>d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0");
+const uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,6);
+const blank=()=>({v:2,t:0,p:{name:"",sur:"",age:"",tel:"",city:"",job:"",fam:"",goal:"",note:""},inc:[],exp:[],lim:{},buy:[],rec:[],debts:[],goals:[],pin:""});
+function norm(o){
+  const b=blank();if(!o||typeof o!=="object")return b;
+  const str=(v,n)=>typeof v==="string"?v.slice(0,n):"";
+  const dt=v=>/^\d{4}-\d{2}-\d{2}$/.test(v)?v:ymd(new Date());
+  for(const k in b.p)b.p[k]=str(o.p&&o.p[k]!=null?String(o.p[k]):"",k==="note"?500:80);
+  b.t=Number(o.t)||0;
+  if(Array.isArray(o.inc))b.inc=o.inc.map(x=>({id:str(x.id,20)||uid(),n:str(x.n,60),a:num(x.a),d:dt(x.d)})).filter(x=>x.a);
+  if(Array.isArray(o.exp))b.exp=o.exp.map(x=>({id:str(x.id,20)||uid(),n:str(x.n,60),a:num(x.a),c:CATS.includes(x.c)?x.c:"Boshqa",d:dt(x.d),r:str(x.r,20)})).filter(x=>x.a);
+  if(Array.isArray(o.buy))b.buy=o.buy.map(x=>({id:str(x.id,20)||uid(),n:str(x.n,60),p:num(x.p),ok:!!x.ok})).filter(x=>x.n);
+  if(Array.isArray(o.rec))b.rec=o.rec.map(x=>({id:str(x.id,20)||uid(),n:str(x.n,60),a:num(x.a),c:CATS.includes(x.c)?x.c:"Boshqa",day:Math.min(28,Math.max(1,num(x.day)||1))})).filter(x=>x.a&&x.n);
+  if(Array.isArray(o.debts))b.debts=o.debts.map(x=>({id:str(x.id,20)||uid(),n:str(x.n,60),a:num(x.a),t:x.t==="menga"?"menga":"men",d:dt(x.d),p:Math.max(0,Math.min(num(x.a),Math.round(Number(x.p))||0))})).filter(x=>x.a&&x.n);
+  if(Array.isArray(o.goals))b.goals=o.goals.map(x=>({id:str(x.id,20)||uid(),n:str(x.n,60),g:num(x.g),s:Math.max(0,Math.round(Number(x.s))||0),d:/^\d{4}-\d{2}-\d{2}$/.test(x.d)?x.d:"",k:!!x.k,b:str(x.b,40)})).filter(x=>x.g&&x.n);
+  b.pin=typeof o.pin==="string"&&/^[0-9a-f]{64}$/.test(o.pin)?o.pin:"";
+  if(o.lim&&typeof o.lim==="object")CATS.forEach(c=>{if(num(o.lim[c]))b.lim[c]=num(o.lim[c])});
+  return b;
+}
+let S=blank(),cur=new Date(),cloud=null,status="local";
+cur.setDate(1);
+try{const r=localStorage.getItem(KEY);if(r)S=norm(JSON.parse(r))}catch(e){}
+function setStatus(s,t){status=s;const el=$("sync");el.textContent=t;el.className="st "+(s==="ok"?"ok":s==="err"?"er":"")}
+let timer=null;
+function save(){
+  S.t=Date.now();
+  try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}
+  render();
+  if(!cloud){setStatus("local","Faqat shu qurilmada saqlandi");return}
+  setStatus("wait","Saqlanmoqda...");clearTimeout(timer);timer=setTimeout(push,500);
+}
+async function push(){
+  try{await cloud.set({json:JSON.stringify(S),t:S.t});setStatus("ok","Akkauntga saqlandi")}
+  catch(e){setStatus("err","Saqlanmadi: "+(e&&e.code||"xato")+". Qurilmada bor.")}
+}
+async function initCloud(){
+  try{
+    const tg=window.Telegram&&Telegram.WebApp,cs=tg&&tg.CloudStorage;let get;
+    if(cs&&tg.initData){
+      const cp=(fn,...a)=>new Promise((ok,no)=>fn.call(cs,...a,(e,v)=>e?no(e):ok(v)));
+      cloud={set:async o=>{
+        const j=o.json,n=Math.ceil(j.length/3000),kv={h_meta:JSON.stringify({n,t:o.t})};
+        for(let i=0;i<n;i++)kv["h_"+i]=j.slice(i*3000,(i+1)*3000);
+        await Promise.all(Object.entries(kv).map(([k,v])=>cp(cs.setItem,k,v)));
+      }};
+      get=async()=>{const m=JSON.parse(await cp(cs.getItem,"h_meta")||"null");if(!m)return null;
+        return (await Promise.all(Array.from({length:m.n},(_,i)=>cp(cs.getItem,"h_"+i)))).join("")};
+    }else if(typeof claude!=="undefined"){
+      const u=await claude.use("user"),db=await claude.use("db");
+      if(!u||!db||!u.id){setStatus("local","Faqat shu qurilmada saqlanadi");return}
+      const id=await u.id();cloud=db.collection("data/users/"+id).doc("main");
+      get=async()=>{const sn=await cloud.get();return sn.exists?sn.data().json:null};
+    }else{setStatus("local","Faqat shu qurilmada saqlanadi");return}
+    const j=await get();let c=null;
+    try{c=j?norm(JSON.parse(j)):null}catch(e){}
+    if(c&&c.t>=S.t){S=c;try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}render();fillP();setStatus("ok","Bulutdan yuklandi");applyRec();chkLock();return}
+    await push();
+  }catch(e){cloud=null;setStatus("local","Faqat shu qurilmada saqlanadi")}
+}
+function fexp(a){const q=($("fq").value||"").trim().toLowerCase(),c=$("fc").value;return a.filter(e=>(!c||e.c===c)&&(!q||e.n.toLowerCase().includes(q)||String(e.a).includes(q)))}
+function applyRec(){
+  const n=new Date(),m=ymd(n).slice(0,7);let ch=false;
+  S.rec.forEach(r=>{if(n.getDate()>=r.day&&!S.exp.some(e=>e.r===r.id&&e.d.startsWith(m))){S.exp.unshift({id:uid(),n:r.n,a:r.a,c:r.c,d:m+"-"+String(r.day).padStart(2,"0"),r:r.id});ch=true}});
+  if(ch)save();
+}
+function addR(){
+  const n=$("rN").value.trim(),a=num($("rA").value),d=Math.min(28,num($("rD").value)||1);
+  if(!n||!a){alert("Nomi va summani to‘g‘ri kiriting.");return}
+  S.rec.push({id:uid(),n,a,c:$("rC").value,day:d});$("rN").value="";$("rA").value="";$("rD").value="";applyRec();save();
+}
+function addD(){
+  const n=$("dN").value.trim(),a=num($("dA").value);
+  if(!n||!a){alert("Ism va summani to‘g‘ri kiriting.");return}
+  S.debts.push({id:uid(),n,a,t:$("dT").value,d:$("dD").value||ymd(new Date()),p:0});$("dN").value="";$("dA").value="";save();
+}
+async function payD(id){
+  const x=S.debts.find(e=>e.id===id);if(!x)return;
+  const left=x.a-x.p;
+  const a=await ask("Qancha to‘ladingiz? (qolgan: "+f(left)+")","");if(a===null)return;
+  const v=num(a);if(!v||v>left){alert("Summa 1 dan "+left+" gacha bo‘lishi kerak.");return}
+  x.p+=v;
+  if(await yes(x.t==="men"?"Bu to‘lov chiqimga ham yozilsinmi?":"Bu pul kirimga ham yozilsinmi?")){
+    const o={id:uid(),n:((x.t==="men"?"Qarz to‘lovi: ":"Qarz qaytdi: ")+x.n).slice(0,60),a:v,d:ymd(new Date())};
+    if(x.t==="men")S.exp.unshift(Object.assign(o,{c:"Boshqa",r:""}));else S.inc.unshift(o);
+  }
+  save();
+}
+function addG(){
+  const n=$("gN").value.trim(),g=num($("gA").value);
+  if(!n||!g){alert("Maqsad nomi va summani to‘g‘ri kiriting.");return}
+  S.goals.push({id:uid(),n,g,s:0,d:$("gD").value,k:$("gK").checked,b:$("gB").value.trim().slice(0,40)});$("gN").value="";$("gA").value="";$("gD").value="";$("gB").value="";save();
+}
+async function putG(id){
+  const x=S.goals.find(e=>e.id===id);if(!x)return;
+  const a=await ask("Qancha pul solasiz?","");if(a===null)return;
+  const v=num(a);if(!v){alert("Summa noto‘g‘ri.");return}
+  x.s+=v;save();
+  if(x.k&&x.s>=x.g)alert("Tabriklayman! Maqsadga erishdingiz, endi pulni yechib olishingiz mumkin.");
+}
+async function takeG(id){
+  const x=S.goals.find(e=>e.id===id);if(!x)return;
+  if(x.k&&x.s<x.g){alert("Maqsadga yetmaguncha yechib bo‘lmaydi. Yana "+f(x.g-x.s)+" qoldi.");return}
+  const a=await ask("Qancha yechib olasiz? (hozir: "+f(x.s)+")","");if(a===null)return;
+  const v=num(a);if(!v||v>x.s){alert("Summa noto‘g‘ri.");return}
+  x.s-=v;save();
+}
+async function delG(id){
+  const x=S.goals.find(e=>e.id===id);if(!x)return;
+  if(x.k&&x.s>0&&x.s<x.g){alert("Qulflangan maqsadni, ichida pul bor ekan, o‘chirib bo‘lmaydi.");return}
+  await del("goals",id);
+}
+async function hh(s){const b=await crypto.subtle.digest("SHA-256",new TextEncoder().encode("hisob:"+s));return [...new Uint8Array(b)].map(x=>x.toString(16).padStart(2,"0")).join("")}
+async function setPin(off){
+  try{
+    if(S.pin){const o=await ask("Hozirgi PIN:","",true);if(o===null)return;if(await hh(o)!==S.pin){alert("PIN noto‘g‘ri.");return}}
+    else if(off){alert("PIN o‘rnatilmagan.");return}
+    if(off){S.pin="";save();alert("PIN o‘chirildi.");return}
+    const p=await ask("Yangi PIN (4–12 ta raqam):","",true);if(p===null)return;
+    if(!/^\d{4,12}$/.test(p)){alert("PIN 4–12 ta raqamdan iborat bo‘lsin.");return}
+    S.pin=await hh(p);unl=true;save();alert("PIN o‘rnatildi.");
+  }catch(e){alert("PIN ishlamadi.")}
+}
+let unl=false;
+function chkLock(){const el=$("lk");if(S.pin&&!unl){el.style.display="flex";$("lp").focus()}else el.style.display="none"}
+async function tryUnlock(){try{if(await hh($("lp").value)===S.pin){unl=true;$("lp").value="";$("le").textContent="";chkLock()}else $("le").textContent="PIN noto‘g‘ri."}catch(e){$("le").textContent="Xato."}}
+function extra(){
+  const now=new Date(),td=ymd(now),m=ym(),isNow=m===td.slice(0,7);
+  const sum=(a,k)=>a.filter(e=>e.d.startsWith(k)).reduce((s,e)=>s+e.a,0);
+  const te=sum(S.exp,m),ti=sum(S.inc,m),pm=ymd(new Date(cur.getFullYear(),cur.getMonth()-1,1)).slice(0,7),tp=sum(S.exp,pm),t=[];
+  if(isNow){const dim=new Date(now.getFullYear(),now.getMonth()+1,0).getDate(),dl=dim-now.getDate()+1,left=ti-te;t.push(left>0?"Bugun taxminan "+f(left/dl)+" sarflasangiz bo‘ladi ("+dl+" kun qoldi).":"Bu oy chiqim kirimdan oshdi, tejash kerak.")}
+  if(tp){const pc=Math.round((te-tp)/tp*100);t.push("O‘tgan oyga nisbatan chiqim "+Math.abs(pc)+"% "+(pc>=0?"ko‘p":"kam")+".")}
+  $("ins").textContent=t.join(" ");
+  const soon=ymd(new Date(now.getFullYear(),now.getMonth(),now.getDate()+3));
+  $("al").innerHTML=S.debts.filter(x=>x.p<x.a&&x.d<=soon).map(x=>`<div class="card" style="border-color:var(--bad);padding:10px 14px;margin-bottom:8px">${x.t==="men"?"Qaytarishingiz kerak":"Sizga qaytarilishi kerak"}: <b>${esc(x.n)}</b>, ${f(x.a-x.p)}, muddat ${x.d}${x.d<td?" (o‘tib ketgan)":""}</div>`).join("");
+  $("dL").innerHTML=S.debts.length?S.debts.map(x=>`<li class="${x.p>=x.a?"done":""}"><span class="n">${esc(x.n)}<br><small class="mute">${x.t==="men"?"Men qarzdorman":"Menga qarz"} · muddat ${x.d} · to‘langan ${f(x.p)} / ${f(x.a)}</small><div class="bar" style="margin:4px 0 0"><i style="width:${Math.min(100,x.p/x.a*100)}%"></i></div></span><b>${x.p>=x.a?"To‘landi":f(x.a-x.p)}</b>${x.p<x.a?`<button class="g" onclick="payD('${x.id}')">To‘lov</button>`:""}<button class="x" onclick="del('debts','${x.id}')" aria-label="O‘chirish">×</button></li>`).join(""):'<li class="mute">Qarz yo‘q.</li>';
+  const dm=S.debts.filter(x=>x.t==="men").reduce((s,x)=>s+x.a-x.p,0),dg=S.debts.filter(x=>x.t==="menga").reduce((s,x)=>s+x.a-x.p,0);
+  $("dS").textContent=(dm||dg)?"Men qaytarishim kerak: "+f(dm)+" · Menga qaytarilishi kerak: "+f(dg):"";
+  $("gL").innerHTML=S.goals.length?S.goals.map(x=>{
+    const p=Math.min(100,x.s/x.g*100),rest=Math.max(0,x.g-x.s);let need="";
+    if(!rest)need=" · maqsadga erishildi";
+    else if(x.d){if(x.d<td)need=" · muddat o‘tgan";else{const q=x.d.split("-"),mo=Math.max(1,(q[0]-now.getFullYear())*12+(q[1]-1-now.getMonth()));need=" · oyiga "+f(rest/mo)+" tashlash kerak"}}
+    return `<li style="display:block"><div class="cat"><div>${esc(x.n)}<br><small>${f(x.s)} / ${f(x.g)}${need}${x.k&&x.s<x.g?" · qulflangan":""}${x.b?" · "+esc(x.b):""}</small></div><span><button class="g" onclick="putG('${x.id}')">Pul solish</button> <button class="g" onclick="takeG('${x.id}')">${x.k&&x.s<x.g?"🔒 Yechish":"Yechish"}</button><button class="x" onclick="delG('${x.id}')" aria-label="O‘chirish">×</button></span></div><div class="bar" style="margin-bottom:2px"><i style="width:${p}%"></i></div></li>`}).join(""):'<li class="mute">Maqsad yo‘q. Birinchisini qo‘shing.</li>';
+  $("rL").innerHTML=S.rec.length?S.rec.map(x=>`<li><span class="n">${esc(x.n)}<br><small class="mute">${x.c} · har oyning ${x.day}-kuni</small></span><b>${f(x.a)}</b><button class="x" onclick="del('rec','${x.id}')" aria-label="O‘chirish">×</button></li>`).join(""):'<li class="mute">Doimiy to‘lov yo‘q.</li>';
+  const ks=[];for(let i=5;i>=0;i--){const d=new Date(cur.getFullYear(),cur.getMonth()-i,1);ks.push([ymd(d).slice(0,7),d.toLocaleDateString("uz-UZ",{month:"short"})])}
+  const vs=ks.map(k=>[sum(S.inc,k[0]),sum(S.exp,k[0])]),mx=Math.max(1,...vs.flat());
+  let g=`<svg viewBox="0 0 600 190" style="width:100%;height:auto" role="img" aria-label="Oxirgi 6 oy kirim va chiqim">`;
+  vs.forEach((v,i)=>{const x=i*100+14,a=v[0]/mx*130,b=v[1]/mx*130;g+=`<rect x="${x}" y="${150-a}" width="34" height="${a}" rx="4" style="fill:var(--acc)"/><rect x="${x+38}" y="${150-b}" width="34" height="${b}" rx="4" style="fill:var(--bad)"/><text x="${x+36}" y="174" text-anchor="middle" font-size="13" style="fill:var(--mute)">${ks[i][1]}</text>`});
+  $("ch").innerHTML=g+'</svg><div class="mute">Yashil-ko‘k: kirim · to‘q sariq: chiqim</div>';
+}
+function dlg(msg,def,mode,secret){return new Promise(res=>{
+  const el=$("dg"),i=$("di"),ok=$("dk"),no=$("dn");
+  $("dm").textContent=msg;i.type=secret?"password":"text";i.style.display=mode==="ask"?"":"none";i.value=def||"";
+  no.style.display=mode==="say"?"none":"";el.style.display="flex";if(mode==="ask")i.focus();
+  const done=v=>{el.style.display="none";ok.onclick=no.onclick=i.onkeydown=null;res(v)};
+  ok.onclick=()=>done(mode==="ask"?i.value:true);no.onclick=()=>done(mode==="ask"?null:false);
+  i.onkeydown=e=>{if(e.key==="Enter")ok.onclick()};
+})}
+const ask=(m,d,sec)=>dlg(m,d,"ask",sec),yes=m=>dlg(m,"","yes");
+window.alert=m=>{dlg(String(m),"","say")};
+const TABS=[["Asosiy",["chs","cats"]],["Kirim va chiqim",["inc","exp","rec"]],["Qarzlar",["debt"]],["Jamg‘arma",["goal","buy"]],["Men",["prof","bak"]]];
+function tab(n){
+  TABS.forEach((t,i)=>t[1].forEach(id=>{$(id).style.display=i===n?"":"none"}));
+  $("tabs").innerHTML=TABS.map((t,i)=>`<button class="${i===n?"on":""}" onclick="tab(${i})">${t[0]}</button>`).join("");
+  scrollTo(0,0);
+}
+function theme(){const r=document.documentElement;const d=r.dataset.theme?r.dataset.theme==="dark":matchMedia("(prefers-color-scheme:dark)").matches;r.dataset.theme=d?"light":"dark"}
+function mv(n){cur=new Date(cur.getFullYear(),cur.getMonth()+n,1);render()}
+const ym=()=>ymd(cur).slice(0,7);
+function fillP(){
+  const m={pName:"name",pSur:"sur",pAge:"age",pTel:"tel",pCity:"city",pJob:"job",pFam:"fam",pGoal:"goal",pNote:"note"};
+  for(const k in m)$(k).value=S.p[m[k]];
+}
+function saveP(){
+  const g=k=>$(k).value.trim();
+  const age=g("pAge"),fam=g("pFam");
+  if(age!==""&&!(+age>=0&&+age<=120)){$("pSt").textContent="Yosh 0 dan 120 gacha bo‘lishi kerak.";$("pSt").className="st er";return}
+  if(fam!==""&&!(+fam>=0&&+fam<=30)){$("pSt").textContent="Oila a’zolari soni 0 dan 30 gacha.";$("pSt").className="st er";return}
+  S.p={name:g("pName"),sur:g("pSur"),age:age,tel:g("pTel"),city:g("pCity"),job:g("pJob"),fam:fam,goal:g("pGoal"),note:g("pNote")};
+  save();$("pSt").textContent="Saqlandi";$("pSt").className="st ok";
+}
+function addI(){
+  const n=$("iN").value.trim(),a=num($("iA").value);
+  if(!n||!a){alert("Manba nomi va summani to‘g‘ri kiriting.");return}
+  S.inc.unshift({id:uid(),n,a,d:$("iD").value||ymd(new Date())});$("iN").value="";$("iA").value="";save();
+}
+function addE(){
+  const n=$("eN").value.trim(),a=num($("eA").value);
+  if(!n||!a){alert("Nomi va summani to‘g‘ri kiriting.");return}
+  S.exp.unshift({id:uid(),n,a,c:$("eC").value,d:$("eD").value||ymd(new Date())});$("eN").value="";$("eA").value="";save();
+}
+async function edit(list,id){
+  const x=S[list].find(e=>e.id===id);if(!x)return;
+  const n=await ask("Nomi:",x.n);if(n===null)return;
+  const a=await ask("Summa:",String(x.a));if(a===null)return;
+  if(!n.trim()||!num(a)){alert("Nomi va summa to‘g‘ri emas.");return}
+  x.n=n.trim().slice(0,60);x.a=num(a);save();
+}
+async function del(list,id){if(!await yes("O‘chirilsinmi?"))return;S[list]=S[list].filter(e=>e.id!==id);save()}
+function addB(){
+  const n=$("bN").value.trim();if(!n){alert("Nima olish kerakligini yozing.");return}
+  S.buy.push({id:uid(),n,p:num($("bP").value),ok:false});$("bN").value="";$("bP").value="";save();
+}
+function togB(id){const b=S.buy.find(e=>e.id===id);if(b){b.ok=!b.ok;save()}}
+function setL(c,v){const n=num(v);if(n)S.lim[c]=n;else delete S.lim[c];save()}
+function bakGet(){
+  const t=JSON.stringify(S);$("bk").value=t;
+  try{navigator.clipboard.writeText(t).then(()=>alert("Nusxa olindi. Uni xavfsiz joyga saqlang."),()=>{$("bk").select()})}catch(e){$("bk").select()}
+}
+async function bakSet(){
+  try{
+    const o=JSON.parse($("bk").value);if(!o||typeof o!=="object"||!o.p)throw 0;
+    if(!await yes("Hozirgi ma’lumotlar nusxadagisi bilan almashtiriladi. Davom etilsinmi?"))return;
+    S=norm(o);save();fillP();alert("Tiklandi.");
+  }catch(e){alert("Nusxa matni noto‘g‘ri. Avval ‘Nusxa olish’ bilan olingan matnni qo‘ying.")}
+}
+function li(x,list,extra){return `<li><span class="n">${esc(x.n)}<br><small class="mute">${extra}${x.d}</small></span><b>${f(x.a)}</b><button class="x" onclick="edit('${list}','${x.id}')" aria-label="Tahrirlash">✎</button><button class="x" onclick="del('${list}','${x.id}')" aria-label="O‘chirish">×</button></li>`}
+function render(){try{render0();extra()}catch(e){console.error(e)}}
+function render0(){
+  const m=ym(),P=S.p;
+  const inc=S.inc.filter(e=>e.d.startsWith(m)),exp=S.exp.filter(e=>e.d.startsWith(m));
+  const ti=inc.reduce((s,e)=>s+e.a,0),te=exp.reduce((s,e)=>s+e.a,0),left=ti-te;
+  $("nm").textContent=((P.name+" "+P.sur).trim())||"Ismingiz";
+  $("age").textContent=P.age?P.age+" yosh":"";
+  $("sub").textContent=[P.job,P.city,P.fam?"oila: "+P.fam+" kishi":"",P.goal?"maqsad: "+P.goal:""].filter(Boolean).join(", ");
+  $("mo").textContent=cur.toLocaleDateString("uz-UZ",{month:"long",year:"numeric"});
+  $("sInc").textContent=f(ti);$("sSp").textContent=f(te);
+  $("sLeft").textContent=f(left);$("sLeft").className=left<0?"neg":"pos";
+  $("iL").innerHTML=inc.length?inc.map(x=>li(x,"inc","")).join(""):'<li class="mute">Bu oyda kirim yo‘q.</li>';
+  $("eL").innerHTML=fexp(exp).length?fexp(exp).map(x=>li(x,"exp",x.c+" · ")).join(""):'<li class="mute">Bu oyda chiqim yo‘q.</li>';
+  $("cL").innerHTML=CATS.map(c=>{
+    const t=exp.filter(e=>e.c===c).reduce((s,e)=>s+e.a,0),l=S.lim[c]||0;
+    const pc=l?Math.min(100,t/l*100):(te?t/te*100:0);
+    return `<div class="cat"><div>${c}<br><small>${f(t)}${l?" / "+f(l):""}</small></div><input class="lim" type="number" inputmode="numeric" min="0" placeholder="Limit" value="${l||""}" onchange="setL('${c}',this.value)" aria-label="${c} limiti"></div><div class="bar"><i class="${l&&t>l?"over":""}" style="width:${pc}%"></i></div>`
+  }).join("");
+  $("bL").innerHTML=S.buy.length?S.buy.map(b=>`<li class="${b.ok?"done":""}"><input type="checkbox" ${b.ok?"checked":""} onchange="togB('${b.id}')" aria-label="Olindi"><span class="n">${esc(b.n)}</span><span class="mute">${b.p?f(b.p):""}</span><button class="x" onclick="del('buy','${b.id}')" aria-label="O‘chirish">×</button></li>`).join(""):'<li class="mute">Ro‘yxat bo‘sh.</li>';
+  const tot=S.buy.filter(b=>!b.ok).reduce((s,b)=>s+b.p,0);
+  $("bT").textContent=tot?"Olinmagan narsalar jami: "+f(tot)+(tot>left?" (bu oy qolgan pulingizdan ko‘p)":""):"";
+}
+$("eC").innerHTML=$("rC").innerHTML=CATS.map(c=>`<option>${c}</option>`).join("");
+$("fc").innerHTML='<option value="">Barcha toifalar</option>'+$("eC").innerHTML;
+$("iD").value=$("eD").value=$("dD").value=ymd(new Date());
+const TG=window.Telegram&&Telegram.WebApp;
+if(TG){try{
+  TG.ready();TG.expand();
+  const th=()=>{document.documentElement.dataset.theme=TG.colorScheme==="dark"?"dark":"light"};th();TG.onEvent("themeChanged",th);
+  const u=TG.initDataUnsafe&&TG.initDataUnsafe.user;
+  if(u&&!S.p.name){S.p.name=String(u.first_name||"").slice(0,40);S.p.sur=String(u.last_name||"").slice(0,40)}
+}catch(e){}}
+fillP();render();setStatus("local","Yuklanmoqda...");applyRec();chkLock();tab(S.p.name?0:4);
+initCloud();
+</script>
+</body>
+</html>
